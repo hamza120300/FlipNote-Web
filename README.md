@@ -62,3 +62,7 @@ All data is stored in `server/db.json`. Writes are atomic (temp file + rename) a
 ```
 
 All ids are UUIDs and deletes are soft (`deletedAt`), so the model is ready for future cloud sync.
+
+## Contributing
+
+Pull requests and issues are welcome — see [CONTRIBUTING.md](./CONTRIBUTING.md) for the workflow and project guidelines.
