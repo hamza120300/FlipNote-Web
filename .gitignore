@@ -1,0 +1,4 @@
+node_modules
+dist
+server/db.json
+server/db.json.tmp
