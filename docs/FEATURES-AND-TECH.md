@@ -8,96 +8,166 @@
 
 ## 1. Features
 
-### 1.1 Categories
-- Create, rename, and reorder (↑ / ↓ buttons on hover) categories in the sidebar.
-- Each category has a color dot and an optional icon.
-- Live card count shown next to every category.
-- Deleting a category moves its cards to **Inbox** (the default category) — the Inbox itself cannot be deleted.
-- Category names are trimmed and duplicates are rejected.
+Each feature below includes **💡 Why it's useful** — the problem it solves for you.
 
-### 1.2 Cards (Notes)
+### 1.1 Categories & Sub-categories
+- Create, rename, and reorder (↑ / ↓ buttons on hover) categories in the sidebar.
+- **Sub-categories**: a category can live inside another (e.g. *Study → Math, Physics*). Sub-categories are indented in the sidebar, and selecting a parent shows its own cards **plus** its children's cards.
+- Each category has a color dot and an optional emoji icon.
+- Live card count next to every category (parents include their children's counts).
+- Deleting a category moves its cards to **Inbox** and promotes its sub-categories to the top level — nothing is lost.
+- Create a category on the fly from the **+ New card** menu or from the editor's **Move to** dropdown — no need to leave what you're doing.
+
+> 💡 **Why:** notes become useless when they pile up in one list. Categories give every note a home, and sub-categories let big areas (like Study or Work) stay organized without cluttering the sidebar.
+
+### 1.2 Cards (Notes) — two types in one app
 - **Two card types** (chosen from the **+ New card** menu):
   - 📝 **Text note** — title + free-form body.
   - ☑ **Checklist** — interactive task list (see §1.3).
 - Create a card with one click or `Ctrl+N`; the editor opens with the title focused immediately.
-- Edit title and body; the card preview in the list updates **live** while typing.
-- If a card has no title, the first line of the body is shown as its title.
-- Per-card actions: **pin** 📌 (pinned cards always sort first), **favorite** ★, **duplicate** ⧉, **accent color** (8-color palette), **move to another category** (dropdown), **delete** (to Trash).
+- Live preview while typing; if a card has no title, its first line is shown as the title.
+- Per-card actions: **pin** 📌 (always sorts first), **favorite** ★, **archive** 🗄️, **duplicate** ⧉, **emoji icon** 😀, **accent color**, **move to category**, **delete** (to Trash).
 - **Grid / list view** toggle, persisted in settings.
-- Per-card text direction (LTR/RTL) is auto-detected from the first strong character, so Arabic and English cards both render correctly side by side.
+- Per-card text direction (LTR/RTL) auto-detected, so Arabic and English cards render correctly side by side.
 
-### 1.3 Checklist cards (Dual-Type Cards)
-- Checklist items can be **checked off directly from the card in the list** — no need to open the editor.
-- A smart **progress bar + counter** (e.g. `3/4`) is shown on the card, in the editor, and in review mode.
-- Editor features: add item (`Enter`), edit item text inline, delete item, **Clear completed**.
-- Works with Arabic and English items mixed in the same list.
+> 💡 **Why:** some thoughts are prose, some are to-do lists. Having both types in one board means you never need a second app, and capture never requires a decision up front.
 
-### 1.4 Top Deck Review & Flip Mode 🌟
-Turn any category (or smart collection / search result) into a fullscreen flashcard deck with the **🃏 Review** button:
+### 1.3 Checklist cards with due dates
+- Items can be **checked off directly from the card in the list** — no need to open the editor.
+- Smart **progress bar + counter** (e.g. `3/4`) on the card, in the editor, and in review mode.
+- **Due date per item** 📅 — a small date field in the editor; the card shows a date chip that **turns red when overdue**.
+- Editor: add item (`Enter`), inline edit, delete, **Clear completed**.
 
-- **3D flip animation** — click the card (or press `Space`/`Enter`) to flip between:
-  - **Front:** the title / main idea + category + tags.
-  - **Back:** the full details — body text, or the checklist with its progress.
-- **Progress counter** — `3 / 12` with a live progress bar; **Next / Previous** navigation (also `←` / `→`, direction-aware in RTL).
-- **Celebration screen** 🎉 when the deck is finished, showing how many cards were reviewed.
-- `Esc` exits at any time. The deck is snapshotted when review starts, so edits elsewhere don't shuffle it.
-- Perfect for meeting recaps, study flashcards, or a distraction-free daily task review.
+> 💡 **Why:** a task you can tick in one click actually gets ticked. Due dates turn a static list into a plan, and the red overdue chip makes slipping deadlines impossible to miss.
 
-### 1.5 Autosave & data safety
-- Every change is persisted automatically after a **~500 ms debounce**.
-- A visible indicator shows the save state: `Saved ✓` / `Saving…` / `Save failed`.
-- On window close, pending changes are flushed with `navigator.sendBeacon`.
-- If saving fails, the user is warned and the unsaved content stays in the editor.
-- Deletes are **soft** (`deletedAt` timestamp) — nothing is destroyed until the user empties Trash.
+### 1.4 Today smart view 📅
+- A sidebar view collecting every card that has an **open checklist item due today or overdue**, with a live count.
 
-### 1.6 Search
-- Global search box, focusable with `Ctrl+K`.
-- Searches **title, body, and tags** across all cards, filtered live while typing.
-- Case-insensitive and **Arabic-aware**:
-  - ignores diacritics / tashkeel (`ملاحظَة` ≡ `ملاحظة`),
-  - normalizes letter variants: `أ / إ / آ → ا`, `ى → ي`, `ة → ه`.
+> 💡 **Why:** instead of checking every list each morning, one click answers "what do I need to do *today*?" across all categories.
+
+### 1.5 Top Deck Review & Flip Mode 🌟
+Turn any category, smart view, or search result into a fullscreen flashcard deck with the **🃏 Review** button:
+
+- **3D flip animation** — click (or `Space`/`Enter`) to flip between:
+  - **Front:** icon + title / main idea + category + tags.
+  - **Back:** full details — body text, or the checklist with its progress.
+- **Progress counter** — `3 / 12` with a live bar; **Next / Previous** (also `←` / `→`, direction-aware in RTL).
+- **Celebration screen 🎉** when the deck is finished.
+- `Esc` exits; the deck is snapshotted at start so edits elsewhere don't shuffle it.
+- Archived and trashed cards never appear in review.
+
+> 💡 **Why:** notes you never revisit are notes you lose. Flip mode turns passive notes into active recall — ideal for studying, memorizing, and weekly reviews — and the celebration makes finishing a habit.
+
+### 1.6 Card links & backlinks 🔗
+- Type **`[[`** in a note's body to search your cards and insert a link like `[[Project plan]]`.
+- A **Links** row under the editor shows every outgoing link as a clickable chip — click to jump to that card.
+- A **Backlinks** row shows every card that links **to** the current card.
+- Links to deleted/renamed cards appear as visibly **broken** (struck through) rather than silently vanishing.
+
+> 💡 **Why:** knowledge is a network, not a list. Links connect a meeting note to its project, and backlinks answer "where is this mentioned?" automatically — a personal wiki with zero setup.
+
+### 1.7 Templates per category 📋
+- Each category can store a **template** (📋 button on hover in the sidebar).
+- New **text cards** in that category start pre-filled with the template body.
+- New **checklists** turn each template line into a ready-made item.
+- Quick-captured notes are never overwritten by a template.
+
+> 💡 **Why:** recurring notes (meeting minutes, daily standups, shopping lists) always start with the same skeleton. Templates remove that repeated typing and keep notes consistent.
+
+### 1.8 Archive 🗄️
+- Archive any card from the editor (🗄️ button) or by **dragging it onto Archive** in the sidebar.
+- Archived cards leave all normal views, search, Today, and Review mode — but are never deleted.
+- The Archive view lists them with one-click **Unarchive**.
+
+> 💡 **Why:** finished work shouldn't clutter your board, but deleting feels risky. Archive keeps the board focused on what's active while preserving everything for reference.
+
+### 1.9 Quick Capture ⚡
+- `Ctrl+Shift+N` or the ⚡ button opens a minimal capture box from anywhere in the app.
+- `Enter` saves · `Esc` discards · `Shift+Enter` for a new line.
+- Inline syntax: **`#tag`** adds a tag, **`@Category`** files it into that category; otherwise it lands in **Inbox**.
+
+> 💡 **Why:** ideas die in the seconds it takes to find the right folder. Quick Capture makes saving a thought instant and decision-free — organize later, capture now.
+
+### 1.10 Icons & colors 🎨
+- Pick an **emoji icon** for any category or card from a 24-emoji grid (plus "none").
+- Pick an **accent color** per card and per category from a fixed palette.
+
+> 💡 **Why:** visual anchors beat reading. A 🏠 next to Home or a red stripe on an urgent card lets you find things at a glance, before you've read a single word.
+
+### 1.11 Drag & drop 🖱️
+- Drag any card onto a **sidebar category** to move it there.
+- Drag onto **Archive** to archive it, or onto **Trash** to delete it.
+- Drop targets highlight with a dashed outline while dragging.
+
+> 💡 **Why:** re-organizing with menus is friction; dragging a card where it belongs is instant and satisfying — so your board actually stays organized.
+
+### 1.12 Autosave & data safety
+- Every change persists automatically after a **~500 ms debounce**, with a visible `Saved ✓ / Saving… / Save failed` indicator.
+- Failed saves **auto-retry** (handles OneDrive/antivirus file locks); pending changes flush on window close via `sendBeacon`.
+- Writes are **atomic** (temp file + rename) — a crash can never corrupt the database.
+- Deletes are **soft** — nothing is destroyed until you empty Trash.
+
+> 💡 **Why:** the core promise of a notes app is *never lose anything*. You never press Save, and neither a crash, a power cut, nor a syncing OneDrive can take your notes.
+
+### 1.13 Search (Arabic-aware)
+- `Ctrl+K`; searches **title, body, and tags** live while typing.
+- Case-insensitive and **Arabic-aware**: ignores diacritics/tashkeel (`ملاحظَة` ≡ `ملاحظة`) and normalizes letter variants (`أ/إ/آ → ا`, `ى → ي`, `ة → ه`).
 - Multi-word queries match if **all** terms are found.
 
-### 1.7 Tags
-- Inline tag input in the editor with **autocomplete** suggestions from existing tags.
-- `Enter` adds a tag, `Backspace` on an empty input removes the last one, ✕ removes a specific tag.
-- Tags are normalized to lowercase and de-duplicated.
-- **Untagged** smart view lists every card with no tags.
+> 💡 **Why:** search is how you get notes *back out*. Arabic normalization means you find «ملاحظة» even if you typed «ملاحظه» — standard search engines in most apps miss this.
 
-### 1.8 Smart collections (sidebar)
+### 1.14 Tags
+- Inline tag input with **autocomplete** from existing tags; `Enter` adds, ✕ removes.
+- Normalized to lowercase and de-duplicated; **Untagged** smart view catches strays.
+
+> 💡 **Why:** tags cut across categories — `#urgent` can live in Work *and* Home. They're the second axis of organization that folders can't provide.
+
+### 1.15 Smart collections (sidebar)
 | Collection | Contents |
 |---|---|
-| 🗂️ All Notes | Every non-deleted card |
+| 🗂️ All Notes | Every active card |
+| 📅 Today | Cards with checklist items due today or overdue |
 | ★ Favorites | Cards marked favorite |
 | ◷ Recent | 20 most recently updated cards |
 | 🏷️ Untagged | Cards with no tags |
+| 🗄️ Archive | Archived cards |
 | 🗑 Trash | Soft-deleted cards |
 
-### 1.9 Trash
-- Deleted cards go to Trash instead of being destroyed.
-- Per-card **Restore** and **Delete forever** actions.
-- **Empty Trash** purges everything after confirmation.
+> 💡 **Why:** the same notes, many lenses. Smart views answer common questions ("what changed recently?", "what's untagged?") without any manual filing.
 
-### 1.10 Backup — Export / Import
-- **Export all**: downloads the entire database as a single versioned JSON file.
-- **Import**: reads a previously exported JSON file and **merges by `id`** — the newer `updatedAt` wins, so re-importing is lossless and idempotent.
+### 1.16 Trash
+- Deleted cards go to Trash; **Restore** or **Delete forever** per card; **Empty Trash** with confirmation.
 
-### 1.11 Localization & RTL
-- Full **Arabic / English** UI, switchable at runtime (Settings or `Ctrl+Shift+L`) with no reload.
-- The whole layout **mirrors in RTL** (sidebar moves to the right) using CSS logical properties.
-- Dates are formatted per locale with `Intl.DateTimeFormat`.
-- No hard-coded user-facing strings — everything goes through the i18n dictionary.
+> 💡 **Why:** everyone deletes the wrong thing eventually. Trash makes deletion reversible, so you can clean up without fear.
 
-### 1.12 Appearance
-- **Light / Dark / System** themes (System follows the OS via `prefers-color-scheme`).
-- Responsive: below 900 px the editor becomes a full-screen overlay.
+### 1.17 Backup — Export / Import
+- **Export all** to a single versioned JSON file.
+- **Import** merges by `id` — newer `updatedAt` wins, so round-trips are lossless.
 
-### 1.13 Keyboard shortcuts
+> 💡 **Why:** your data stays *yours*. Plain JSON means no lock-in, easy backups, and a future migration path to any other tool or device.
+
+### 1.18 Localization & RTL
+- Full **Arabic / English** UI, switchable at runtime (`Ctrl+Shift+L`), layout fully mirrored in RTL via CSS logical properties, locale-aware dates.
+
+> 💡 **Why:** bilingual users shouldn't settle for a half-translated UI. RTL as a first-class citizen means the Arabic experience is as polished as the English one.
+
+### 1.19 Appearance
+- **Light / Dark / System** themes; adjustable layout; editor becomes fullscreen on narrow windows.
+
+> 💡 **Why:** a notes app is open all day — it should match your environment and never strain your eyes.
+
+### 1.20 Keyboard shortcuts
 | Action | Shortcut |
 |---|---|
 | New card | `Ctrl+N` |
+| Quick capture | `Ctrl+Shift+N` |
 | Focus search | `Ctrl+K` |
 | Switch language (AR ⇄ EN) | `Ctrl+Shift+L` |
+| Flip card (review) | `Space` / `Enter` |
+| Next / previous (review) | `→` / `←` |
+| Exit review / dialogs | `Esc` |
+
+> 💡 **Why:** power users live on the keyboard. Every frequent action has a shortcut, so the mouse is optional.
 
 ---
 
@@ -175,6 +245,7 @@ Notes React/
   "categories": [
     {
       "id": "uuid", "name": "Inbox", "color": "#6366f1", "icon": "📥",
+      "parentId": null, "template": "",
       "sortOrder": 0, "isDefault": true,
       "createdAt": "ISO-8601", "updatedAt": "ISO-8601", "deletedAt": null
     }
@@ -182,7 +253,8 @@ Notes React/
   "cards": [
     {
       "id": "uuid", "title": "", "body": "", "type": "text | checklist",
-      "items": [{ "id": "uuid", "text": "Buy milk", "isDone": false }],
+      "items": [{ "id": "uuid", "text": "Buy milk", "isDone": false, "dueDate": "2026-11-17" }],
+      "icon": null, "isArchived": false,
       "categoryId": "uuid",
       "tags": ["work"], "isPinned": false, "isFavorite": false, "color": null,
       "createdAt": "ISO-8601", "updatedAt": "ISO-8601", "deletedAt": null
@@ -294,7 +366,8 @@ Inbox category) on first run.
 |---|---|---|
 | 1 — Foundation | Categories, cards, autosave, search, tags, trash, export/import, i18n/RTL, themes | ✅ **Done** |
 | — Extras | **Dual-type cards (text / checklist)** with inline check-off & progress bar; **Top Deck Review & Flip Mode** with 3D flip, counter and celebration screen | ✅ **Done** |
-| — Extras 2 | **Emoji icon picker** for categories & cards; **drag & drop** cards to categories/Trash; **Quick Capture** (`Ctrl+Shift+N`, `#tag` / `@Category` syntax); **due dates on checklist items** + Today smart view | ✅ **Done** |
+| — Extras 2 | **Emoji icon picker** for categories & cards; **drag & drop** cards to categories/Archive/Trash; **Quick Capture** (`Ctrl+Shift+N`, `#tag` / `@Category` syntax); **due dates on checklist items** + Today smart view | ✅ **Done** |
+| — Extras 3 | **Card links & backlinks** (`[[` autocomplete, broken-link detection); **sub-categories** (two levels); **templates per category**; **Archive** hidden from all views & Review | ✅ **Done** |
 | 2 — Signature | Quick Capture window, pinned floating cards | ⬜ Planned |
 | 3 — Knowledge | Smart collection rule builder, card links & backlinks | ⬜ Planned |
 | 4 — Productivity | Review mode, checklists, focus mode & timer | ⬜ Planned |

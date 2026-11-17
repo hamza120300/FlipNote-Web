@@ -13,6 +13,7 @@ export default function Sidebar({
   setQuery,
   searchRef,
   onQuickCapture,
+  onEditTemplate,
   onOpenSettings,
 }) {
   const { dispatch, saveState } = useStore();
@@ -24,18 +25,26 @@ export default function Sidebar({
   const [dragOverId, setDragOverId] = useState(null);
 
   const liveCards = cards.filter((c) => !c.deletedAt);
-  const countFor = (catId) =>
-    liveCards.filter((c) => c.categoryId === catId).length;
+  const activeCards = liveCards.filter((c) => !c.isArchived);
+  // A parent category's count includes its sub-categories' cards.
+  const countFor = (catId) => {
+    const ids = [
+      catId,
+      ...categories.filter((c) => c.parentId === catId).map((c) => c.id),
+    ];
+    return activeCards.filter((c) => ids.includes(c.categoryId)).length;
+  };
   const trashCount = cards.filter((c) => c.deletedAt).length;
+  const archiveCount = liveCards.filter((c) => c.isArchived).length;
   const today = todayStr();
 
   const smart = [
-    { id: 'all', label: t('allNotes'), icon: '🗂️', count: liveCards.length },
+    { id: 'all', label: t('allNotes'), icon: '🗂️', count: activeCards.length },
     {
       id: 'today',
       label: t('today'),
       icon: '📅',
-      count: liveCards.filter((c) =>
+      count: activeCards.filter((c) =>
         (c.items || []).some((i) => !i.isDone && i.dueDate && i.dueDate <= today)
       ).length,
     },
@@ -43,14 +52,14 @@ export default function Sidebar({
       id: 'favorites',
       label: t('favorites'),
       icon: '★',
-      count: liveCards.filter((c) => c.isFavorite).length,
+      count: activeCards.filter((c) => c.isFavorite).length,
     },
     { id: 'recent', label: t('recent'), icon: '◷', count: null },
     {
       id: 'untagged',
       label: t('untagged'),
       icon: '🏷️',
-      count: liveCards.filter((c) => !c.tags?.length).length,
+      count: activeCards.filter((c) => !c.tags?.length).length,
     },
   ];
 
@@ -149,10 +158,15 @@ export default function Sidebar({
       </div>
 
       <nav className="nav-section grow">
-        {categories.map((cat, i) => (
+        {categories.map((cat) => {
+          const siblings = categories.filter(
+            (c) => (c.parentId || null) === (cat.parentId || null)
+          );
+          const sibIndex = siblings.findIndex((c) => c.id === cat.id);
+          return (
           <div
             key={cat.id}
-            className={`nav-item cat-item ${isSel('category', cat.id) ? 'active' : ''} ${dragOverId === cat.id ? 'drag-over' : ''}`}
+            className={`nav-item cat-item ${cat.depth ? 'sub' : ''} ${isSel('category', cat.id) ? 'active' : ''} ${dragOverId === cat.id ? 'drag-over' : ''}`}
             onClick={() => onSelect({ type: 'category', id: cat.id })}
             {...dropProps(cat.id, (cardId) =>
               dispatch({
@@ -187,7 +201,7 @@ export default function Sidebar({
               <button
                 className="icon-btn"
                 title="↑"
-                disabled={i === 0}
+                disabled={sibIndex <= 0}
                 onClick={() =>
                   dispatch({ type: 'REORDER_CATEGORY', id: cat.id, delta: -1 })
                 }
@@ -197,12 +211,19 @@ export default function Sidebar({
               <button
                 className="icon-btn"
                 title="↓"
-                disabled={i === categories.length - 1}
+                disabled={sibIndex === siblings.length - 1}
                 onClick={() =>
                   dispatch({ type: 'REORDER_CATEGORY', id: cat.id, delta: 1 })
                 }
               >
                 ↓
+              </button>
+              <button
+                className="icon-btn"
+                title={t('template')}
+                onClick={() => onEditTemplate(cat)}
+              >
+                📋
               </button>
               <button
                 className="icon-btn"
@@ -258,7 +279,8 @@ export default function Sidebar({
               </div>
             )}
           </div>
-        ))}
+          );
+        })}
         {adding && (
           <input
             className="inline-input"
@@ -279,6 +301,21 @@ export default function Sidebar({
       </nav>
 
       <nav className="nav-section sidebar-foot">
+        <button
+          className={`nav-item ${isSel('smart', 'archive') ? 'active' : ''} ${dragOverId === 'archive' ? 'drag-over' : ''}`}
+          onClick={() => onSelect({ type: 'smart', id: 'archive' })}
+          {...dropProps('archive', (cardId) =>
+            dispatch({
+              type: 'UPDATE_CARD',
+              id: cardId,
+              patch: { isArchived: true },
+            })
+          )}
+        >
+          <span className="nav-icon">🗄️</span>
+          <span className="nav-label">{t('archive')}</span>
+          <span className="nav-count">{archiveCount}</span>
+        </button>
         <button
           className={`nav-item ${isSel('smart', 'trash') ? 'active' : ''} ${dragOverId === 'trash' ? 'drag-over' : ''}`}
           onClick={() => onSelect({ type: 'smart', id: 'trash' })}

@@ -19,6 +19,7 @@ export default function CardList({
 }) {
   const { dispatch } = useStore();
   const isTrash = selection.type === 'smart' && selection.id === 'trash';
+  const isArchive = selection.type === 'smart' && selection.id === 'archive';
   const [newMenuOpen, setNewMenuOpen] = useState(false);
   const newMenuRef = useRef(null);
 
@@ -36,10 +37,12 @@ export default function CardList({
       ? categories.find((c) => c.id === selection.id)?.name || ''
       : {
           all: t('allNotes'),
+          today: t('today'),
           favorites: t('favorites'),
           recent: t('recent'),
           untagged: t('untagged'),
           trash: t('trash'),
+          archive: t('archive'),
         }[selection.id];
 
   const catName = (id) => categories.find((c) => c.id === id)?.name || '';
@@ -74,7 +77,7 @@ export default function CardList({
             >
               {t('emptyTrash')}
             </button>
-          ) : (
+          ) : isArchive ? null : (
             <>
               <button
                 className="btn"
@@ -261,6 +264,23 @@ export default function CardList({
                       }}
                     >
                       {t('deleteForever')}
+                    </button>
+                  </div>
+                )}
+                {isArchive && (
+                  <div className="trash-actions">
+                    <button
+                      className="btn"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        dispatch({
+                          type: 'UPDATE_CARD',
+                          id: card.id,
+                          patch: { isArchived: false },
+                        });
+                      }}
+                    >
+                      {t('unarchive')}
                     </button>
                   </div>
                 )}

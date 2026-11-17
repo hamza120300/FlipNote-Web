@@ -929,6 +929,63 @@ body {
   color: var(--text-dim);
 }
 
+/* ---------- sub-categories ---------- */
+.cat-item.sub {
+  margin-inline-start: 22px;
+}
+
+/* ---------- card links ---------- */
+.body-wrap {
+  position: relative;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+.link-suggestions {
+  position: absolute;
+  bottom: 8px;
+  inset-inline-start: 18px;
+  background: var(--bg-pane);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+  min-width: 200px;
+  z-index: 20;
+  overflow: hidden;
+}
+.links-section {
+  padding: 8px 18px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.links-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+.links-label {
+  font-size: 0.75rem;
+  color: var(--text-dim);
+}
+.link-chip {
+  border: none;
+  cursor: pointer;
+  color: var(--accent);
+}
+.link-chip:hover {
+  text-decoration: underline;
+}
+.link-chip.broken {
+  color: var(--danger);
+  text-decoration: line-through;
+  cursor: default;
+}
+
 /* ---------- modal ---------- */
 .modal-backdrop {
   position: fixed;

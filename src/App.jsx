@@ -20,6 +20,7 @@ export default function App() {
   // null | { onCreate: (id) => void | null } — controls the new-category dialog
   const [catPrompt, setCatPrompt] = useState(null);
   const [showCapture, setShowCapture] = useState(false);
+  const [templateCat, setTemplateCat] = useState(null);
   const searchRef = useRef(null);
 
   const lang = db?.settings?.language || 'en';
@@ -73,15 +74,43 @@ export default function App() {
   );
   const inbox = categories.find((c) => c.isDefault) || categories[0];
 
+  // Tree-ordered list: each top-level category followed by its children.
+  const orderedCategories = useMemo(() => {
+    const tops = categories.filter((c) => !c.parentId);
+    const out = [];
+    for (const top of tops) {
+      out.push({ ...top, depth: 0 });
+      for (const child of categories.filter((c) => c.parentId === top.id)) {
+        out.push({ ...child, depth: 1 });
+      }
+    }
+    // Orphans whose parent is missing render at top level.
+    for (const c of categories) {
+      if (c.parentId && !categories.some((p) => p.id === c.parentId)) {
+        out.push({ ...c, depth: 0 });
+      }
+    }
+    return out;
+  }, [categories]);
+
   const visibleCards = useMemo(() => {
     if (!db) return [];
     let cards = db.cards;
     if (selection.type === 'smart' && selection.id === 'trash') {
       cards = cards.filter((c) => c.deletedAt);
+    } else if (selection.type === 'smart' && selection.id === 'archive') {
+      cards = cards.filter((c) => !c.deletedAt && c.isArchived);
     } else {
-      cards = cards.filter((c) => !c.deletedAt);
+      cards = cards.filter((c) => !c.deletedAt && !c.isArchived);
       if (selection.type === 'category') {
-        cards = cards.filter((c) => c.categoryId === selection.id);
+        // A parent category also shows its sub-categories' cards.
+        const ids = [
+          selection.id,
+          ...categories
+            .filter((c) => c.parentId === selection.id)
+            .map((c) => c.id),
+        ];
+        cards = cards.filter((c) => ids.includes(c.categoryId));
       } else if (selection.id === 'favorites') {
         cards = cards.filter((c) => c.isFavorite);
       } else if (selection.id === 'untagged') {
@@ -104,7 +133,7 @@ export default function App() {
       return sorted.slice(0, 20);
     }
     return sorted;
-  }, [db, selection, query]);
+  }, [db, selection, query, categories]);
 
   // Select the newest empty card after ADD_CARD: track card count.
   const prevCount = useRef(0);
@@ -140,7 +169,7 @@ export default function App() {
     setCatPrompt({ onCreate: typeof onCreate === 'function' ? onCreate : null });
   }
 
-  function confirmNewCategory(rawName, icon) {
+  function confirmNewCategory(rawName, icon, parentId) {
     const name = (rawName || '').trim();
     const prompt = catPrompt;
     setCatPrompt(null);
@@ -158,6 +187,7 @@ export default function App() {
         id,
         name,
         icon: icon || '',
+        parentId: parentId || null,
         color: PALETTE[categories.length % PALETTE.length],
       });
     }
@@ -180,7 +210,7 @@ export default function App() {
     <div className="app" dir={dir}>
       <Sidebar
         t={t}
-        categories={categories}
+        categories={orderedCategories}
         cards={db.cards}
         selection={selection}
         onSelect={(sel) => {
@@ -191,6 +221,7 @@ export default function App() {
         setQuery={setQuery}
         searchRef={searchRef}
         onQuickCapture={() => setShowCapture(true)}
+        onEditTemplate={(cat) => setTemplateCat(cat)}
         onOpenSettings={() => setShowSettings(true)}
       />
       <CardList
@@ -214,7 +245,9 @@ export default function App() {
         t={t}
         lang={lang}
         card={selectedCard}
-        categories={categories}
+        categories={orderedCategories}
+        allCards={db.cards}
+        onOpenCard={setSelectedCardId}
         onNewCategory={requestNewCategory}
         onClose={() => setSelectedCardId(null)}
       />
@@ -232,8 +265,24 @@ export default function App() {
       {catPrompt && (
         <NewCategoryDialog
           t={t}
+          topCategories={categories.filter((c) => !c.parentId)}
           onConfirm={confirmNewCategory}
           onCancel={() => setCatPrompt(null)}
+        />
+      )}
+      {templateCat && (
+        <TemplateDialog
+          t={t}
+          category={templateCat}
+          onSave={(template) => {
+            dispatch({
+              type: 'UPDATE_CATEGORY',
+              id: templateCat.id,
+              patch: { template },
+            });
+            setTemplateCat(null);
+          }}
+          onCancel={() => setTemplateCat(null)}
         />
       )}
       {showCapture && (
@@ -247,9 +296,10 @@ export default function App() {
   );
 }
 
-function NewCategoryDialog({ t, onConfirm, onCancel }) {
+function NewCategoryDialog({ t, topCategories, onConfirm, onCancel }) {
   const [name, setName] = useState('');
   const [icon, setIcon] = useState(null);
+  const [parentId, setParentId] = useState('');
   return (
     <div className="modal-backdrop" onClick={onCancel}>
       <div className="modal" onClick={(e) => e.stopPropagation()}>
@@ -266,15 +316,69 @@ function NewCategoryDialog({ t, onConfirm, onCancel }) {
           value={name}
           onChange={(e) => setName(e.target.value)}
           onKeyDown={(e) => {
-            if (e.key === 'Enter') onConfirm(name, icon);
+            if (e.key === 'Enter') onConfirm(name, icon, parentId || null);
             if (e.key === 'Escape') onCancel();
           }}
         />
+        <label className="field">
+          <span>{t('parentCategory')}</span>
+          <select
+            className="select"
+            value={parentId}
+            onChange={(e) => setParentId(e.target.value)}
+          >
+            <option value="">{t('topLevel')}</option>
+            {topCategories.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.icon ? `${c.icon} ` : ''}
+                {c.name}
+              </option>
+            ))}
+          </select>
+        </label>
         <div className="field-label">{t('icon')}</div>
         <IconPicker value={icon} onChange={setIcon} />
         <div className="field row">
-          <button className="btn primary" onClick={() => onConfirm(name, icon)}>
+          <button
+            className="btn primary"
+            onClick={() => onConfirm(name, icon, parentId || null)}
+          >
             {t('create')}
+          </button>
+          <button className="btn" onClick={onCancel}>
+            {t('cancel')}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function TemplateDialog({ t, category, onSave, onCancel }) {
+  const [text, setText] = useState(category.template || '');
+  return (
+    <div className="modal-backdrop" onClick={onCancel}>
+      <div className="modal capture-modal" onClick={(e) => e.stopPropagation()}>
+        <header className="modal-header">
+          <h2>
+            📋 {t('template')} — {category.name}
+          </h2>
+          <button className="icon-btn" onClick={onCancel}>
+            ✕
+          </button>
+        </header>
+        <textarea
+          className="capture-input"
+          autoFocus
+          dir="auto"
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          onKeyDown={(e) => e.key === 'Escape' && onCancel()}
+        />
+        <p className="capture-hint">{t('templateHint')}</p>
+        <div className="field row">
+          <button className="btn primary" onClick={() => onSave(text)}>
+            {t('save')}
           </button>
           <button className="btn" onClick={onCancel}>
             {t('cancel')}

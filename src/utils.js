@@ -109,6 +109,18 @@ export function confirmBox(message) {
   }
 }
 
+// Extract [[Card Title]] links from a card body.
+export function parseLinks(body) {
+  const out = [];
+  const re = /\[\[([^\[\]\n]+)\]\]/g;
+  let m;
+  while ((m = re.exec(body || ''))) {
+    const t = m[1].trim();
+    if (t && !out.some((x) => x.toLowerCase() === t.toLowerCase())) out.push(t);
+  }
+  return out;
+}
+
 // Parse quick-capture text: #tag adds tags, @Category targets a category.
 export function parseCapture(text, categories) {
   const tags = [];

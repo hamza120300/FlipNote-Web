@@ -29,6 +29,8 @@ export function reducer(db, action) {
         name,
         color: action.color || '#6366f1',
         icon: action.icon || '',
+        parentId: action.parentId || null,
+        template: '',
         sortOrder: db.categories.length,
         isDefault: false,
         createdAt: ts,
@@ -50,9 +52,13 @@ export function reducer(db, action) {
       const inbox = db.categories.find((c) => c.isDefault && !c.deletedAt);
       return {
         ...db,
-        categories: db.categories.map((c) =>
-          c.id === action.id ? { ...c, deletedAt: ts, updatedAt: ts } : c
-        ),
+        categories: db.categories.map((c) => {
+          if (c.id === action.id) return { ...c, deletedAt: ts, updatedAt: ts };
+          // Orphaned sub-categories move to the top level.
+          if (c.parentId === action.id)
+            return { ...c, parentId: null, updatedAt: ts };
+          return c;
+        }),
         cards: db.cards.map((card) =>
           card.categoryId === action.id && !card.deletedAt
             ? { ...card, categoryId: inbox ? inbox.id : card.categoryId, updatedAt: ts }
@@ -61,16 +67,23 @@ export function reducer(db, action) {
       };
     }
     case 'REORDER_CATEGORY': {
-      const visible = db.categories
-        .filter((c) => !c.deletedAt)
+      const moving = db.categories.find((c) => c.id === action.id);
+      if (!moving) return db;
+      // Reorder among siblings (same parent) only.
+      const siblings = db.categories
+        .filter(
+          (c) => !c.deletedAt && (c.parentId || null) === (moving.parentId || null)
+        )
         .sort((a, b) => a.sortOrder - b.sortOrder);
-      const from = visible.findIndex((c) => c.id === action.id);
+      const from = siblings.findIndex((c) => c.id === action.id);
       const to = from + action.delta;
-      if (from < 0 || to < 0 || to >= visible.length) return db;
-      const order = [...visible];
+      if (from < 0 || to < 0 || to >= siblings.length) return db;
+      const order = [...siblings];
       const [moved] = order.splice(from, 1);
       order.splice(to, 0, moved);
-      const sortMap = new Map(order.map((c, i) => [c.id, i]));
+      // Reassign the original sortOrder slots within the sibling group.
+      const slots = siblings.map((c) => c.sortOrder);
+      const sortMap = new Map(order.map((c, i) => [c.id, slots[i]]));
       return {
         ...db,
         categories: db.categories.map((c) =>
@@ -81,13 +94,31 @@ export function reducer(db, action) {
 
     /* ---------- cards ---------- */
     case 'ADD_CARD': {
+      // Apply the category template unless explicit content was provided.
+      const cat = db.categories.find((c) => c.id === action.categoryId);
+      const tpl = (cat?.template || '').trim();
+      const cardType = action.cardType || 'text';
+      let body = action.body || '';
+      let items = [];
+      if (tpl && !body) {
+        if (cardType === 'checklist') {
+          items = tpl
+            .split('\n')
+            .map((s) => s.trim())
+            .filter(Boolean)
+            .map((text) => ({ id: uuid(), text, isDone: false, dueDate: null }));
+        } else {
+          body = tpl;
+        }
+      }
       const card = {
         id: uuid(),
         title: action.title || '',
-        body: action.body || '',
-        type: action.cardType || 'text',
-        items: [],
+        body,
+        type: cardType,
+        items,
         icon: null,
+        isArchived: false,
         categoryId: action.categoryId,
         tags: action.tags || [],
         isPinned: false,

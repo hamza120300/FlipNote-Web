@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useStore } from '../store.jsx';
-import { detectDir, PALETTE, uuid, todayStr } from '../utils.js';
+import { detectDir, PALETTE, uuid, todayStr, parseLinks } from '../utils.js';
 import IconPicker from './IconPicker.jsx';
 
 export default function Editor({
@@ -8,6 +8,8 @@ export default function Editor({
   lang,
   card,
   categories,
+  allCards,
+  onOpenCard,
   onNewCategory,
   onClose,
 }) {
@@ -15,7 +17,9 @@ export default function Editor({
   const [tagInput, setTagInput] = useState('');
   const [itemInput, setItemInput] = useState('');
   const [showIconPicker, setShowIconPicker] = useState(false);
+  const [linkQuery, setLinkQuery] = useState(null); // text typed after [[
   const titleRef = useRef(null);
+  const bodyRef = useRef(null);
 
   // Focus title when a fresh empty card is selected.
   useEffect(() => {
@@ -58,6 +62,58 @@ export default function Editor({
         .slice(0, 6)
     : [];
 
+  /* ---------- card links ---------- */
+  const liveCards = (allCards || []).filter(
+    (c) => !c.deletedAt && c.id !== card.id
+  );
+  const findByTitle = (title) =>
+    liveCards.find(
+      (c) => c.title.trim().toLowerCase() === title.trim().toLowerCase()
+    );
+  const outgoingLinks = parseLinks(card.body).map((title) => ({
+    title,
+    target: findByTitle(title),
+  }));
+  const backlinks = card.title.trim()
+    ? liveCards.filter((c) =>
+        parseLinks(c.body).some(
+          (l) => l.toLowerCase() === card.title.trim().toLowerCase()
+        )
+      )
+    : [];
+
+  // Detect "[[query" right before the cursor to offer link suggestions.
+  const updateLinkQuery = (el) => {
+    const upToCursor = el.value.slice(0, el.selectionStart ?? el.value.length);
+    const m = upToCursor.match(/\[\[([^\[\]\n]*)$/);
+    setLinkQuery(m ? m[1] : null);
+  };
+
+  const linkSuggestions =
+    linkQuery !== null
+      ? liveCards
+          .filter(
+            (c) =>
+              c.title.trim() &&
+              c.title.toLowerCase().includes(linkQuery.toLowerCase())
+          )
+          .slice(0, 6)
+      : [];
+
+  const insertLink = (title) => {
+    const el = bodyRef.current;
+    if (!el) return;
+    const pos = el.selectionStart ?? el.value.length;
+    const before = el.value.slice(0, pos).replace(/\[\[([^\[\]\n]*)$/, `[[${title}]]`);
+    const after = el.value.slice(pos);
+    patch({ body: before + after });
+    setLinkQuery(null);
+    requestAnimationFrame(() => {
+      el.focus();
+      el.setSelectionRange(before.length, before.length);
+    });
+  };
+
   return (
     <section className="editor-pane" dir={detectDir(card.title || card.body)}>
       <div className="editor-toolbar">
@@ -94,6 +150,16 @@ export default function Editor({
           ★
         </button>
         <button
+          className={`icon-btn ${card.isArchived ? 'active' : ''}`}
+          title={card.isArchived ? t('unarchive') : t('archiveAction')}
+          onClick={() => {
+            patch({ isArchived: !card.isArchived });
+            if (!card.isArchived) onClose();
+          }}
+        >
+          🗄️
+        </button>
+        <button
           className="icon-btn"
           title={t('duplicate')}
           onClick={() => dispatch({ type: 'DUPLICATE_CARD', id: card.id })}
@@ -114,6 +180,8 @@ export default function Editor({
         >
           {categories.map((c) => (
             <option key={c.id} value={c.id}>
+              {c.depth ? '— ' : ''}
+              {c.icon ? `${c.icon} ` : ''}
               {c.name}
             </option>
           ))}
@@ -167,12 +235,71 @@ export default function Editor({
           setItemInput={setItemInput}
         />
       ) : (
-        <textarea
-          className="editor-body"
-          placeholder={t('bodyPlaceholder')}
-          value={card.body}
-          onChange={(e) => patch({ body: e.target.value })}
-        />
+        <div className="body-wrap">
+          <textarea
+            ref={bodyRef}
+            className="editor-body"
+            placeholder={t('bodyPlaceholder')}
+            value={card.body}
+            onChange={(e) => {
+              patch({ body: e.target.value });
+              updateLinkQuery(e.target);
+            }}
+            onKeyUp={(e) => updateLinkQuery(e.target)}
+            onClick={(e) => updateLinkQuery(e.target)}
+            onBlur={() => setTimeout(() => setLinkQuery(null), 200)}
+          />
+          {linkSuggestions.length > 0 && (
+            <div className="link-suggestions">
+              {linkSuggestions.map((c) => (
+                <button
+                  key={c.id}
+                  className="tag-suggestion"
+                  onMouseDown={(e) => {
+                    e.preventDefault();
+                    insertLink(c.title.trim());
+                  }}
+                >
+                  🔗 {c.title}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {(outgoingLinks.length > 0 || backlinks.length > 0) && (
+        <div className="links-section">
+          {outgoingLinks.length > 0 && (
+            <div className="links-row">
+              <span className="links-label">🔗 {t('links')}:</span>
+              {outgoingLinks.map(({ title, target }) => (
+                <button
+                  key={title}
+                  className={`tag-chip link-chip ${!target ? 'broken' : ''}`}
+                  disabled={!target}
+                  onClick={() => target && onOpenCard(target.id)}
+                >
+                  {title}
+                </button>
+              ))}
+            </div>
+          )}
+          {backlinks.length > 0 && (
+            <div className="links-row">
+              <span className="links-label">↩ {t('backlinks')}:</span>
+              {backlinks.map((c) => (
+                <button
+                  key={c.id}
+                  className="tag-chip link-chip"
+                  onClick={() => onOpenCard(c.id)}
+                >
+                  {c.title || t('untitled')}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
       )}
 
       <div className="editor-tags">

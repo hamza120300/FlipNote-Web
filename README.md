@@ -21,8 +21,12 @@ All data is stored in `server/db.json`. Writes are atomic (temp file + rename) a
 
 - **Dual-type cards** — 📝 text notes or ☑ interactive checklists with inline check-off and a smart progress bar (e.g. 3/4).
 - **Top Deck Review & Flip Mode 🌟** — turn any category into a fullscreen flashcard deck: 3D flip (front = title, back = details/checklist), next/previous with a progress counter, and a celebration screen 🎉 at the end.
+- **Card links & backlinks 🔗** — type `[[` to link cards; clickable link chips, automatic backlinks, broken links shown clearly.
+- **Sub-categories** — nest categories (Study → Math, Physics); parents show their children's cards and counts.
+- **Templates 📋** — per-category pre-filled content for new cards; checklist templates become ready-made items.
+- **Archive 🗄️** — hide finished cards from all views and Review without deleting them; one-click unarchive.
 - **Icons** — pick an emoji icon for any category or card (like colors).
-- **Drag & drop** — drag cards onto sidebar categories to move them, or onto Trash to delete.
+- **Drag & drop** — drag cards onto sidebar categories to move them, onto Archive to archive, or onto Trash to delete.
 - **Quick Capture ⚡** — `Ctrl+Shift+N` (or the ⚡ button) opens a mini input; `#tag` adds tags, `@Category` targets a category; saves to Inbox by default.
 - **Due dates & Today view 📅** — set a due date per checklist item; the Today smart view shows everything due or overdue.
 - **Categories** — create, rename, recolor-ready, reorder (↑/↓), delete (cards move to Inbox); live card counts in the sidebar.
