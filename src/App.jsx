@@ -47,7 +47,8 @@ export default function App() {
       if (mod && e.key.toLowerCase() === 'k') {
         e.preventDefault();
         searchRef.current?.focus();
-      } else if (mod && e.shiftKey && e.key.toLowerCase() === 'n') {
+      } else if (mod && e.shiftKey && e.code === 'KeyZ') {
+        // e.code (physical key) so it also works with an Arabic keyboard layout.
         e.preventDefault();
         setShowCapture(true);
       } else if (mod && e.key.toLowerCase() === 'n' && !e.shiftKey) {

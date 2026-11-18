@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { useStore } from '../store.jsx';
 import { PALETTE, todayStr, confirmBox } from '../utils.js';
 import IconPicker from './IconPicker.jsx';
@@ -82,6 +82,79 @@ export default function Sidebar({
     },
   });
 
+  // Category reordering: drag a category onto a sibling to drop before/after it.
+  const dragCatRef = useRef(null);
+  const [catDrop, setCatDrop] = useState(null); // { id, after }
+
+  const catDragProps = (cat) => ({
+    draggable: editingId !== cat.id,
+    onDragStart: (e) => {
+      dragCatRef.current = cat;
+      e.dataTransfer.setData('text/category-id', cat.id);
+      e.dataTransfer.effectAllowed = 'move';
+    },
+    onDragEnd: () => {
+      dragCatRef.current = null;
+      setCatDrop(null);
+    },
+  });
+
+  const isSiblingDrag = (cat) => {
+    const dragged = dragCatRef.current;
+    return (
+      dragged &&
+      dragged.id !== cat.id &&
+      (dragged.parentId || null) === (cat.parentId || null)
+    );
+  };
+
+  const catDropHandlers = (cat) => {
+    const cardDrop = dropProps(cat.id, (cardId) =>
+      dispatch({
+        type: 'UPDATE_CARD',
+        id: cardId,
+        patch: { categoryId: cat.id },
+      })
+    );
+    return {
+      onDragOver: (e) => {
+        if (e.dataTransfer.types.includes('text/category-id')) {
+          if (!isSiblingDrag(cat)) return;
+          e.preventDefault();
+          const rect = e.currentTarget.getBoundingClientRect();
+          const after = e.clientY > rect.top + rect.height / 2;
+          setCatDrop((cur) =>
+            cur?.id === cat.id && cur.after === after ? cur : { id: cat.id, after }
+          );
+        } else {
+          cardDrop.onDragOver(e);
+        }
+      },
+      onDragLeave: (e) => {
+        setCatDrop((cur) => (cur?.id === cat.id ? null : cur));
+        cardDrop.onDragLeave(e);
+      },
+      onDrop: (e) => {
+        if (e.dataTransfer.types.includes('text/category-id')) {
+          e.preventDefault();
+          const dragged = dragCatRef.current;
+          const drop = catDrop;
+          setCatDrop(null);
+          if (dragged && isSiblingDrag(cat)) {
+            dispatch({
+              type: 'MOVE_CATEGORY',
+              id: dragged.id,
+              targetId: cat.id,
+              after: drop?.id === cat.id ? drop.after : false,
+            });
+          }
+        } else {
+          cardDrop.onDrop(e);
+        }
+      },
+    };
+  };
+
   const addCategory = () => {
     const name = newName.trim();
     if (name) {
@@ -108,7 +181,7 @@ export default function Sidebar({
           <h1 className="app-title">{t('appName')}</h1>
           <button
             className="icon-btn"
-            title={`${t('quickCapture')} (Ctrl+Shift+N)`}
+            title={`${t('quickCapture')} (Ctrl+Shift+Z)`}
             onClick={onQuickCapture}
           >
             ⚡
@@ -159,22 +232,19 @@ export default function Sidebar({
 
       <nav className="nav-section grow">
         {categories.map((cat) => {
-          const siblings = categories.filter(
-            (c) => (c.parentId || null) === (cat.parentId || null)
-          );
-          const sibIndex = siblings.findIndex((c) => c.id === cat.id);
+          const dropClass =
+            catDrop?.id === cat.id
+              ? catDrop.after
+                ? 'drop-after'
+                : 'drop-before'
+              : '';
           return (
           <div
             key={cat.id}
-            className={`nav-item cat-item ${cat.depth ? 'sub' : ''} ${isSel('category', cat.id) ? 'active' : ''} ${dragOverId === cat.id ? 'drag-over' : ''}`}
+            className={`nav-item cat-item ${cat.depth ? 'sub' : ''} ${isSel('category', cat.id) ? 'active' : ''} ${dragOverId === cat.id ? 'drag-over' : ''} ${dropClass}`}
             onClick={() => onSelect({ type: 'category', id: cat.id })}
-            {...dropProps(cat.id, (cardId) =>
-              dispatch({
-                type: 'UPDATE_CARD',
-                id: cardId,
-                patch: { categoryId: cat.id },
-              })
-            )}
+            {...catDragProps(cat)}
+            {...catDropHandlers(cat)}
           >
             <span className="cat-dot" style={{ background: cat.color }} />
             {editingId === cat.id ? (
@@ -198,26 +268,6 @@ export default function Sidebar({
             )}
             <span className="nav-count">{countFor(cat.id)}</span>
             <span className="cat-actions" onClick={(e) => e.stopPropagation()}>
-              <button
-                className="icon-btn"
-                title="↑"
-                disabled={sibIndex <= 0}
-                onClick={() =>
-                  dispatch({ type: 'REORDER_CATEGORY', id: cat.id, delta: -1 })
-                }
-              >
-                ↑
-              </button>
-              <button
-                className="icon-btn"
-                title="↓"
-                disabled={sibIndex === siblings.length - 1}
-                onClick={() =>
-                  dispatch({ type: 'REORDER_CATEGORY', id: cat.id, delta: 1 })
-                }
-              >
-                ↓
-              </button>
               <button
                 className="icon-btn"
                 title={t('template')}

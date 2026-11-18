@@ -14,7 +14,7 @@ So instead of looking for another SaaS that would probably get blocked too, I bu
 
 **What it does:**
 📝 Notes and ☑ checklists in one board, organized in categories & sub-categories
-⚡ Quick capture (Ctrl+Shift+N) — save a thought in 2 seconds, organize later
+⚡ Quick capture (Ctrl+Shift+Z) — save a thought in 2 seconds, organize later
 📅 Due dates + a "Today" view across every list
 🃏 Review & Flip mode — turn any category into 3D flashcards (great for meeting recaps and studying)
 🔗 Links between notes with automatic backlinks — a tiny personal wiki

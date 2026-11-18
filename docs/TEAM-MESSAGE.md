@@ -14,7 +14,7 @@ Since Notion is blocked on our machines, I built a small notes app we can run **
 
 ### What it gives you
 - **Notes + checklists in one board**, organized in categories and sub-categories (Work → Project A, Project B…)
-- **Quick capture** (`Ctrl+Shift+N`) — jot a thought in 2 seconds, sort it later
+- **Quick capture** (`Ctrl+Shift+Z`) — jot a thought in 2 seconds, sort it later
 - **Checklists with due dates** and a **"Today"** view that shows everything due/overdue across all lists
 - **Review / flip mode** — turn any category into flashcards to recap meetings or study
 - **Links between notes** (`[[Note title]]`) with automatic backlinks — a mini personal wiki
@@ -44,7 +44,7 @@ Then open **http://localhost:5173** in your browser. That's it.
 ### Shortcuts worth knowing
 | Action | Shortcut |
 |---|---|
-| Quick capture | `Ctrl+Shift+N` |
+| Quick capture | `Ctrl+Shift+Z` |
 | New card | `Ctrl+N` |
 | Search | `Ctrl+K` |
 | Switch Arabic / English | `Ctrl+Shift+L` |

@@ -66,23 +66,22 @@ export function reducer(db, action) {
         ),
       };
     }
-    case 'REORDER_CATEGORY': {
+    case 'MOVE_CATEGORY': {
+      // Move a category before/after a sibling (same parent) via drag & drop.
       const moving = db.categories.find((c) => c.id === action.id);
-      if (!moving) return db;
-      // Reorder among siblings (same parent) only.
+      const target = db.categories.find((c) => c.id === action.targetId);
+      if (!moving || !target || moving.id === target.id) return db;
+      if ((moving.parentId || null) !== (target.parentId || null)) return db;
       const siblings = db.categories
         .filter(
           (c) => !c.deletedAt && (c.parentId || null) === (moving.parentId || null)
         )
         .sort((a, b) => a.sortOrder - b.sortOrder);
-      const from = siblings.findIndex((c) => c.id === action.id);
-      const to = from + action.delta;
-      if (from < 0 || to < 0 || to >= siblings.length) return db;
-      const order = [...siblings];
-      const [moved] = order.splice(from, 1);
-      order.splice(to, 0, moved);
-      // Reassign the original sortOrder slots within the sibling group.
       const slots = siblings.map((c) => c.sortOrder);
+      const order = siblings.filter((c) => c.id !== moving.id);
+      const targetIndex = order.findIndex((c) => c.id === target.id);
+      order.splice(targetIndex + (action.after ? 1 : 0), 0, moving);
+      // Reassign the original sortOrder slots within the sibling group.
       const sortMap = new Map(order.map((c, i) => [c.id, slots[i]]));
       return {
         ...db,

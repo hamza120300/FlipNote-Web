@@ -11,7 +11,7 @@
 Each feature below includes **💡 Why it's useful** — the problem it solves for you.
 
 ### 1.1 Categories & Sub-categories
-- Create, rename, and reorder (↑ / ↓ buttons on hover) categories in the sidebar.
+- Create, rename, and **reorder by drag & drop** (drag a category above/below a sibling) in the sidebar. Hover a category to reveal its actions (template, icon, rename, delete).
 - **Sub-categories**: a category can live inside another (e.g. *Study → Math, Physics*). Sub-categories are indented in the sidebar, and selecting a parent shows its own cards **plus** its children's cards.
 - Each category has a color dot and an optional emoji icon.
 - Live card count next to every category (parents include their children's counts).
@@ -82,7 +82,7 @@ Turn any category, smart view, or search result into a fullscreen flashcard deck
 > 💡 **Why:** finished work shouldn't clutter your board, but deleting feels risky. Archive keeps the board focused on what's active while preserving everything for reference.
 
 ### 1.9 Quick Capture ⚡
-- `Ctrl+Shift+N` or the ⚡ button opens a minimal capture box from anywhere in the app.
+- `Ctrl+Shift+Z` or the ⚡ button opens a minimal capture box from anywhere in the app.
 - `Enter` saves · `Esc` discards · `Shift+Enter` for a new line.
 - Inline syntax: **`#tag`** adds a tag, **`@Category`** files it into that category; otherwise it lands in **Inbox**.
 
@@ -160,7 +160,7 @@ Turn any category, smart view, or search result into a fullscreen flashcard deck
 | Action | Shortcut |
 |---|---|
 | New card | `Ctrl+N` |
-| Quick capture | `Ctrl+Shift+N` |
+| Quick capture | `Ctrl+Shift+Z` |
 | Focus search | `Ctrl+K` |
 | Switch language (AR ⇄ EN) | `Ctrl+Shift+L` |
 | Flip card (review) | `Space` / `Enter` |
@@ -366,7 +366,7 @@ Inbox category) on first run.
 |---|---|---|
 | 1 — Foundation | Categories, cards, autosave, search, tags, trash, export/import, i18n/RTL, themes | ✅ **Done** |
 | — Extras | **Dual-type cards (text / checklist)** with inline check-off & progress bar; **Top Deck Review & Flip Mode** with 3D flip, counter and celebration screen | ✅ **Done** |
-| — Extras 2 | **Emoji icon picker** for categories & cards; **drag & drop** cards to categories/Archive/Trash; **Quick Capture** (`Ctrl+Shift+N`, `#tag` / `@Category` syntax); **due dates on checklist items** + Today smart view | ✅ **Done** |
+| — Extras 2 | **Emoji icon picker** for categories & cards; **drag & drop** cards to categories/Archive/Trash; **Quick Capture** (`Ctrl+Shift+Z`, `#tag` / `@Category` syntax); **due dates on checklist items** + Today smart view | ✅ **Done** |
 | — Extras 3 | **Card links & backlinks** (`[[` autocomplete, broken-link detection); **sub-categories** (two levels); **templates per category**; **Archive** hidden from all views & Review | ✅ **Done** |
 | 2 — Signature | Quick Capture window, pinned floating cards | ⬜ Planned |
 | 3 — Knowledge | Smart collection rule builder, card links & backlinks | ⬜ Planned |
